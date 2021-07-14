@@ -4,6 +4,8 @@
 #include <fstream>
 #include <iostream>
 
+namespace {
+
 namespace filesystem = std::filesystem;
 
 bool isShouldInclude(filesystem::path path) {
@@ -29,6 +31,47 @@ bool isShouldInclude(filesystem::path path) {
 
     return false;
 }
+
+bool doesGitignoreHasQtFiles(filesystem::path gitignore) {
+    auto file = std::ifstream{gitignore};
+
+    if (!file) {
+        return false;
+    }
+
+    for (std::string line; getline(file, line);) {
+        if (line.find(".creator") != std::string::npos) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void addGitIgnore(filesystem::path path) {
+    std::cout << "adding project files to git ignore\n";
+
+    auto gitignore = path / ".gitignore";
+
+    if (!doesGitignoreHasQtFiles(gitignore)) {
+        auto file = std::ofstream{gitignore, std::ios::app};
+        file << "\nbuild/\n\n";
+        file << "\n# qtcreator project files\n";
+        for (auto str : {
+                 "*.cflags",
+                 "*.config",
+                 "*.creator",
+                 "*.creator.user",
+                 "*.cxxflags",
+                 "*.files",
+                 "*.includes",
+             }) {
+            file << str << "\n";
+        }
+    }
+}
+
+} // namespace
 
 int main(int argc, char **argv) {
     auto path = filesystem::absolute(filesystem::current_path());
@@ -78,4 +121,6 @@ int main(int argc, char **argv) {
             }
         }
     }
+
+    addGitIgnore(path);
 }

@@ -2,7 +2,7 @@
 # using matmake2: https://github.com/laserskold/matmake2
 
 main
-  out = main
+  out = create-project
   src =
     src/*.cpp
   config =
