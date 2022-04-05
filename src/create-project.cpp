@@ -136,13 +136,13 @@ int main(int argc, char **argv) {
         std::filesystem::current_path(settings.path);
     }
 
-    if (settings.shouldCreateQtCreatorFiles) {
-        createQtCreatorFiles();
-    }
-
     if (settings.shouldInitProject) {
         initProject(std::filesystem::current_path().filename());
         addGitIgnore(filesystem::absolute(filesystem::current_path()));
+    }
+
+    if (settings.shouldCreateQtCreatorFiles) {
+        createQtCreatorFiles();
     }
 
     if (settings.shouldInitGit) {
