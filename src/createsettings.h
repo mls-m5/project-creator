@@ -29,6 +29,12 @@ struct CreateSettings {
         std::exit(ret);
     }
 
+    void enableAll() {
+        shouldCreateQtCreatorFiles = true;
+        shouldInitProject = true;
+        shouldInitGit = true;
+    }
+
     CreateSettings(int argc, char **argv) {
         auto args = std::vector<std::string>(argv + 1, argv + argc);
         if (args.empty()) {
@@ -48,9 +54,7 @@ struct CreateSettings {
                 printHelp();
             }
             else if (arg == "--all" | arg == "-a") {
-                shouldCreateQtCreatorFiles = true;
-                shouldInitProject = true;
-                shouldInitGit = true;
+                enableAll();
             }
             else if (arg == "--init") {
                 shouldInitProject = true;
@@ -66,7 +70,13 @@ struct CreateSettings {
         }
 
         if (!(shouldCreateQtCreatorFiles | shouldInitGit | shouldInitProject)) {
-            printHelp(1);
+            if (path.empty()) {
+                std::cerr << "please specify path or arguments\n";
+                printHelp(1);
+            }
+
+            enableAll();
+            return;
         }
     }
 };

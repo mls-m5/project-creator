@@ -1,18 +1,26 @@
 
 # using matmake2: https://github.com/laserskold/matmake2
 
-main
+create
   out = create-project
-  src =
-    src/create-project.cpp
+  src = src/create-project.cpp
+  command = [exe]
+  copy =
+     testdata
+     install.sh
+
+build
+  out = build
+  src = src/build-project.cpp
+  command = [exe]
+
+all
   config =
     c++17
     Wall
-  command = [exe]
-  copy = testdata
-
-all
-  in = @main
+  in =
+    @create
+    @build
   includes =
     include
 

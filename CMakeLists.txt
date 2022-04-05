@@ -8,3 +8,12 @@ add_executable(
     )
 
 target_compile_features(create-project PRIVATE cxx_std_17)
+
+add_executable(
+    build
+    src/build-project.cpp
+    )
+
+target_compile_features(build PRIVATE cxx_std_17)
+
+file(COPY install.sh DESTINATION .)
