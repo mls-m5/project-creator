@@ -1,5 +1,5 @@
-
-
+#include "createsettings.h"
+#include "files.h"
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -11,7 +11,7 @@ namespace filesystem = std::filesystem;
 bool isShouldInclude(filesystem::path path) {
     auto ext = path.extension();
 
-    if (ext == ".cpp" || ext == ".cxx" || ext == ".c") {
+    if (ext == ".cpp" || ext == ".cxx" || ext == ".c" || ext == ".cc") {
         return true;
     }
 
@@ -20,6 +20,10 @@ bool isShouldInclude(filesystem::path path) {
     }
 
     if (path.filename() == ".clang-format" || path.filename() == ".gitignore") {
+        return true;
+    }
+
+    if (ext == ".md") {
         return true;
     }
 
@@ -55,7 +59,8 @@ void addGitIgnore(filesystem::path path) {
 
     if (!doesGitignoreHasQtFiles(gitignore)) {
         auto file = std::ofstream{gitignore, std::ios::app};
-        file << "\nbuild/\n\n";
+        file << "\nbuild/";
+        file << "\nbin/\n\n";
         file << "\n# qtcreator project files\n";
         for (auto str : {
                  "*.cflags",
@@ -71,9 +76,7 @@ void addGitIgnore(filesystem::path path) {
     }
 }
 
-} // namespace
-
-int main(int argc, char **argv) {
+void createQtCreatorFiles() {
     auto path = filesystem::absolute(filesystem::current_path());
 
     auto projectName = filesystem::path{"." + path.filename().string()};
@@ -121,6 +124,28 @@ int main(int argc, char **argv) {
             }
         }
     }
+}
 
-    addGitIgnore(path);
+} // namespace
+
+int main(int argc, char **argv) {
+    const auto settings = CreateSettings{argc, argv};
+
+    if (!settings.path.empty()) {
+        std::filesystem::create_directories(settings.path);
+        std::filesystem::current_path(settings.path);
+    }
+
+    if (settings.shouldCreateQtCreatorFiles) {
+        createQtCreatorFiles();
+    }
+
+    if (settings.shouldInitProject) {
+        initProject(std::filesystem::current_path().filename());
+        addGitIgnore(filesystem::absolute(filesystem::current_path()));
+    }
+
+    if (settings.shouldInitGit) {
+        return std::system("git init");
+    }
 }

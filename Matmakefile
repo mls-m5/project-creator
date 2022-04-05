@@ -4,7 +4,7 @@
 main
   out = create-project
   src =
-    src/*.cpp
+    src/create-project.cpp
   config =
     c++17
     Wall
