@@ -2,6 +2,7 @@
 
 #include <filesystem>
 #include <iostream>
+#include <thread>
 
 enum ProjectType {
     CMake,
@@ -40,7 +41,10 @@ void buildCmake(const BuildSettings &settings) {
         }
     }
 
-    if (auto r = std::system("cmake --build .")) {
+    if (auto r =
+            std::system(("cmake --build . -j " +
+                         std::to_string(std::thread::hardware_concurrency()))
+                            .c_str())) {
         exit(r);
     }
 
