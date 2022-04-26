@@ -26,9 +26,20 @@ add_executable(
     src/main.cpp
     )
 
-target_compile_features({name} PRIVATE cxx_std_17)
+target_compile_features(
+    {name}
+    PRIVATE
+    cxx_std_17
+    )
+
+find_package(Threads)
+target_link_libraries(
+    {name}
+    PRIVATE
+    ${CMAKE_THREAD_LIBS_INIT}
+    )
 )_"},
-    {"README.md", R"_(## {name}
+    {"README.md", R"_(# {name}
 )_"},
     {".clang-format", R"_(
 
