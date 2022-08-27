@@ -1,8 +1,10 @@
 #include "createsettings.h"
 #include "files.h"
+#include "qtuserfile.h"
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <random>
 
 namespace {
 
@@ -76,12 +78,43 @@ void addGitIgnore(filesystem::path path) {
     }
 }
 
+/// https://en.cppreference.com/w/cpp/string/basic_string/replace
+std::size_t replaceAll(std::string &inout,
+                       std::string_view what,
+                       std::string_view with) {
+    std::size_t count{};
+    for (std::string::size_type pos{};
+         inout.npos != (pos = inout.find(what.data(), pos, what.length()));
+         pos += with.length(), ++count) {
+        inout.replace(pos, what.length(), with.data(), with.length());
+    }
+    return count;
+}
+
+void createQtUserFile(std::string projectName) {
+    auto filename = projectName + ".creator.user";
+    if (filesystem::exists(filename)) {
+        return;
+    }
+
+    auto str = std::string{qtUserFile};
+
+    auto nameWithoutPeriod = projectName;
+    nameWithoutPeriod.erase(0, 1);
+
+    replaceAll(str, "{{projectName}}", nameWithoutPeriod);
+
+    std::ofstream{filename} << str;
+}
+
 void createQtCreatorFiles() {
     auto path = filesystem::absolute(filesystem::current_path());
 
     auto projectName = filesystem::path{"." + path.filename().string()};
 
     std::cout << "init project " << projectName << "\n";
+
+    createQtUserFile(projectName.string());
 
     if (filesystem::exists(projectName.string() + ".creator")) {
         std::cerr << "found " << projectName.string() << ".creator"
@@ -102,7 +135,7 @@ void createQtCreatorFiles() {
     {
         auto filesFile = std::ofstream{projectName.string() + ".files"};
 
-        for (auto it : filesystem::recursive_directory_iterator{path}) {
+        for (auto &it : filesystem::recursive_directory_iterator{path}) {
             if (isShouldInclude(it.path())) {
                 filesFile << filesystem::relative(it.path(), path).string()
                           << "\n";
@@ -113,7 +146,7 @@ void createQtCreatorFiles() {
     {
         auto includeFile = std::ofstream{projectName.string() + ".includes"};
 
-        for (auto it : filesystem::recursive_directory_iterator{path}) {
+        for (auto &it : filesystem::recursive_directory_iterator{path}) {
             if (filesystem::is_directory(it.path())) {
                 if (it.path().filename() == "include" ||
                     it.path().filename() == "src") {
