@@ -5,6 +5,7 @@
 #include <fstream>
 #include <iostream>
 #include <random>
+#include <regex>
 
 namespace {
 
@@ -78,19 +79,6 @@ void addGitIgnore(filesystem::path path) {
     }
 }
 
-/// https://en.cppreference.com/w/cpp/string/basic_string/replace
-std::size_t replaceAll(std::string &inout,
-                       std::string_view what,
-                       std::string_view with) {
-    std::size_t count{};
-    for (std::string::size_type pos{};
-         inout.npos != (pos = inout.find(what.data(), pos, what.length()));
-         pos += with.length(), ++count) {
-        inout.replace(pos, what.length(), with.data(), with.length());
-    }
-    return count;
-}
-
 void createQtUserFile(std::string projectName) {
     auto filename = projectName + ".creator.user";
     if (filesystem::exists(filename)) {
@@ -102,7 +90,8 @@ void createQtUserFile(std::string projectName) {
     auto nameWithoutPeriod = projectName;
     nameWithoutPeriod.erase(0, 1);
 
-    replaceAll(str, "{{projectName}}", nameWithoutPeriod);
+    auto re = std::regex(std::regex{"\\{\\{projectName\\}\\}"});
+    str = std::regex_replace(str, re, nameWithoutPeriod);
 
     std::ofstream{filename} << str;
 }
