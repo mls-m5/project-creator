@@ -10,6 +10,7 @@ build [flags]
 
 --release      build release
 --test         run tests after build
+--help -h      print this text
 
 )_";
 
@@ -38,10 +39,13 @@ struct BuildSettings {
             else if (arg == "--test") {
                 shouldTest = true;
             }
+            else if (arg == "--help" || arg == "-h") {
+                printHelp(0);
+            }
             else {
                 if (arg.front() == '-') {
                     std::cerr << "invalid argument " << arg << "\n";
-                    std::exit(1);
+                    printHelp(1);
                 }
 
                 path = arg;

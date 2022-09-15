@@ -56,8 +56,8 @@ void buildCmake(const BuildSettings &settings) {
 }
 
 int main(int argc, char *argv[]) {
-    auto type = projectType();
     const auto settings = BuildSettings{argc, argv};
+    auto type = projectType();
 
     switch (type) {
     case CMake:
