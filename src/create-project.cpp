@@ -6,6 +6,7 @@
 #include <iostream>
 #include <random>
 #include <regex>
+#include <set>
 
 namespace {
 
@@ -119,25 +120,47 @@ void refreshFiles(std::filesystem::path projectName,
         }
     }
 
-    {
-        auto includeFile = std::ofstream{projectName.string() + ".includes"};
-
+    auto includeDirs = [isBuildPath, path]() {
+        auto paths = std::vector<std::filesystem::path>{};
         for (auto it = filesystem::recursive_directory_iterator{path};
              it != decltype(it){};
              ++it) {
             if (isBuildPath(it->path().filename())) {
                 it.disable_recursion_pending();
-                //                std::cerr << "ignoring" << it->path() << "\n";
                 continue;
             }
             if (filesystem::is_directory(it->path())) {
                 if (it->path().filename() == "include" ||
                     it->path().filename() == "src") {
-                    includeFile
-                        << filesystem::relative(it->path(), path).string()
-                        << "\n";
+                    paths.push_back(filesystem::relative(it->path(), path));
                 }
             }
+        }
+        return paths;
+    };
+
+    {
+        auto dirs = includeDirs();
+        auto includeFilePath = projectName.string() + ".includes";
+
+        auto set = std::set<std::filesystem::path>{};
+
+        for (auto &dir : dirs) {
+            set.insert(dir);
+        }
+
+        {
+            // Save includes from previous file
+            auto inFile = std::ifstream{includeFilePath};
+            for (auto line = std::string{}; std::getline(inFile, line);) {
+                set.insert(line);
+            }
+        }
+
+        auto includeFile = std::ofstream{includeFilePath};
+
+        for (auto &dir : set) {
+            includeFile << dir.string() << "\n";
         }
     }
 }
