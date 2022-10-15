@@ -96,20 +96,72 @@ void createQtUserFile(std::string projectName) {
     std::ofstream{filename} << str;
 }
 
-void createQtCreatorFiles() {
+void refreshFiles(std::filesystem::path projectName,
+                  std::filesystem::path path) {
+    auto isBuildPath = [](const std::filesystem::path name) {
+        return name == "build" || name == "bin";
+    };
+
+    {
+        auto filesFile = std::ofstream{projectName.string() + ".files"};
+
+        for (auto it = filesystem::recursive_directory_iterator{path};
+             it != decltype(it){};
+             ++it) {
+            if (isBuildPath(it->path().filename())) {
+                it.disable_recursion_pending();
+                continue;
+            }
+            if (isShouldInclude(it->path())) {
+                filesFile << filesystem::relative(it->path(), path).string()
+                          << "\n";
+            }
+        }
+    }
+
+    {
+        auto includeFile = std::ofstream{projectName.string() + ".includes"};
+
+        for (auto it = filesystem::recursive_directory_iterator{path};
+             it != decltype(it){};
+             ++it) {
+            if (isBuildPath(it->path().filename())) {
+                it.disable_recursion_pending();
+                //                std::cerr << "ignoring" << it->path() << "\n";
+                continue;
+            }
+            if (filesystem::is_directory(it->path())) {
+                if (it->path().filename() == "include" ||
+                    it->path().filename() == "src") {
+                    includeFile
+                        << filesystem::relative(it->path(), path).string()
+                        << "\n";
+                }
+            }
+        }
+    }
+}
+
+void createQtCreatorFiles(bool shouldRefresh) {
     auto path = filesystem::absolute(filesystem::current_path());
 
     auto projectName = filesystem::path{"." + path.filename().string()};
 
-    std::cout << "init project " << projectName << "\n";
-
     createQtUserFile(projectName.string());
 
     if (filesystem::exists(projectName.string() + ".creator")) {
+        if (shouldRefresh) {
+            std::cout << "refreshing qtcreator files" << std::endl;
+            refreshFiles(projectName, path);
+            return;
+        }
+
         std::cerr << "found " << projectName.string() << ".creator"
                   << " the project seems to exist\n";
         exit(1);
     }
+
+    std::cout << "init project " << projectName << "\n";
 
     std::ofstream{projectName.string() + ".creator"} << "[General]\n";
 
@@ -121,31 +173,7 @@ void createQtCreatorFiles() {
                       "#define X 43 // ;)\n";
     }
 
-    {
-        auto filesFile = std::ofstream{projectName.string() + ".files"};
-
-        for (auto &it : filesystem::recursive_directory_iterator{path}) {
-            if (isShouldInclude(it.path())) {
-                filesFile << filesystem::relative(it.path(), path).string()
-                          << "\n";
-            }
-        }
-    }
-
-    {
-        auto includeFile = std::ofstream{projectName.string() + ".includes"};
-
-        for (auto &it : filesystem::recursive_directory_iterator{path}) {
-            if (filesystem::is_directory(it.path())) {
-                if (it.path().filename() == "include" ||
-                    it.path().filename() == "src") {
-                    includeFile
-                        << filesystem::relative(it.path(), path).string()
-                        << "\n";
-                }
-            }
-        }
-    }
+    refreshFiles(projectName, path);
 }
 
 } // namespace
@@ -164,7 +192,7 @@ int main(int argc, char **argv) {
     }
 
     if (settings.shouldCreateQtCreatorFiles) {
-        createQtCreatorFiles();
+        createQtCreatorFiles(settings.shouldRefresh);
     }
 
     if (settings.shouldInitGit) {

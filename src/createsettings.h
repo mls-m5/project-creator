@@ -14,6 +14,7 @@ create-project [flagse] [path]
                     ie  --creator --git
 --init              create default project files
 --creator           add qt creator files
+--refresh           add files not currently in the project
 --git               init git
 --help -h           print this string
 )_";
@@ -22,6 +23,7 @@ struct CreateSettings {
     bool shouldCreateQtCreatorFiles = false;
     bool shouldInitGit = false;
     bool shouldInitProject = false;
+    bool shouldRefresh = true;
     std::filesystem::path path;
 
     [[noreturn]] void printHelp(int ret = 0) {
@@ -58,6 +60,9 @@ struct CreateSettings {
             }
             else if (arg == "--init") {
                 shouldInitProject = true;
+            }
+            else if (arg == "--refresh") {
+                shouldRefresh = true;
             }
             else {
                 if (arg.front() == '-') {
