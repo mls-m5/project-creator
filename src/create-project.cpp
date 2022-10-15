@@ -30,6 +30,9 @@ bool isShouldInclude(filesystem::path path) {
     if (ext == ".md") {
         return true;
     }
+    if (ext == ".html" || ext == ".png" || ext == ".jpg") {
+        return true;
+    }
 
     if (path.filename() == "Matmakefile" ||
         path.filename() == "CMakeLists.txt" || path.filename() == "Makefile" ||
