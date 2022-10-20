@@ -15,7 +15,8 @@ namespace filesystem = std::filesystem;
 bool isShouldInclude(filesystem::path path) {
     auto ext = path.extension();
 
-    if (ext == ".cpp" || ext == ".cxx" || ext == ".c" || ext == ".cc") {
+    if (ext == ".cpp" || ext == ".cxx" || ext == ".c" || ext == ".cc" ||
+        ext == ".cppm") {
         return true;
     }
 
