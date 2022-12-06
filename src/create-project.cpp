@@ -7,37 +7,48 @@
 #include <random>
 #include <regex>
 #include <set>
+#include <unordered_set>
 
 namespace {
 
 namespace filesystem = std::filesystem;
 
 bool isShouldInclude(filesystem::path path) {
+
+    static const auto supportedExtensions = std::unordered_set<std::string>{
+        ".cpp",
+        ".cxx",
+        ".c",
+        ".cc",
+        ".cppm",
+        ".h",
+        ".hpp",
+        ".hxx",
+        ".md",
+        ".txt",
+        ".html",
+        ".js",
+        ".png",
+        ".jpg",
+        ".bmp",
+    };
+    static const auto supportedFilenames = std::unordered_set<std::string>{
+        ".clang-format",
+        ".gitignore",
+        "Matmakefile",
+        "CMakeLists.txt",
+        "Makefile",
+        "WORKSPACE",
+        "BUILD",
+    };
+
     auto ext = path.extension();
 
-    if (ext == ".cpp" || ext == ".cxx" || ext == ".c" || ext == ".cc" ||
-        ext == ".cppm") {
+    if (supportedExtensions.find(ext) != supportedExtensions.end()) {
         return true;
     }
 
-    if (ext == ".h" || ext == ".hpp" || ext == ".hxx") {
-        return true;
-    }
-
-    if (path.filename() == ".clang-format" || path.filename() == ".gitignore") {
-        return true;
-    }
-
-    if (ext == ".md") {
-        return true;
-    }
-    if (ext == ".html" || ext == ".png" || ext == ".jpg") {
-        return true;
-    }
-
-    if (path.filename() == "Matmakefile" ||
-        path.filename() == "CMakeLists.txt" || path.filename() == "Makefile" ||
-        path.filename() == "WORKSPACE" || path.filename() == "BUILD") {
+    if (supportedFilenames.find(path.filename()) != supportedFilenames.end()) {
         return true;
     }
 
