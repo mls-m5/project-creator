@@ -89,6 +89,8 @@ void addGitIgnore(filesystem::path path) {
                  "*.cxxflags",
                  "*.files",
                  "*.includes",
+                 ".qtc_clangd/",
+                 ".creator.user.",
              }) {
             file << str << "\n";
         }
