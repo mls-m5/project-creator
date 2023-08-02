@@ -90,7 +90,7 @@ void addGitIgnore(filesystem::path path) {
                  "*.files",
                  "*.includes",
                  ".qtc_clangd/",
-                 ".creator.user.",
+                 "*.creator.user.*",
              }) {
             file << str << "\n";
         }
