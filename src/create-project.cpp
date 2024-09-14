@@ -121,6 +121,7 @@ void refreshFiles(std::filesystem::path projectName,
     };
 
     {
+        auto files = std::set<std::filesystem::path>{};
         auto filesFile = std::ofstream{projectName.string() + ".files"};
 
         for (auto it = filesystem::recursive_directory_iterator{path};
@@ -131,9 +132,23 @@ void refreshFiles(std::filesystem::path projectName,
                 continue;
             }
             if (isShouldInclude(it->path())) {
-                filesFile << filesystem::relative(it->path(), path).string()
-                          << "\n";
+                files.insert(filesystem::relative(it->path(), path));
             }
+        }
+
+        if (!std::system(
+                "git ls-files --recurse-submodules > /tmp/cpfilelist.txt")) {
+            auto file = std::ifstream{"/tmp/cpfilelist.txt"};
+            for (std::string line; std::getline(file, line);) {
+                if (!line.empty() && line.back() == '\r') {
+                    line.pop_back();
+                }
+                files.insert(line);
+            }
+        }
+
+        for (auto &it : files) {
+            filesFile << it.string() << "\n";
         }
     }
 
