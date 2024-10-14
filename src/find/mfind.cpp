@@ -1,21 +1,25 @@
 
 #include "findsettings.h"
+#include <cctype>
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <functional>
 #include <iostream>
+#include <locale>
+#include <map>
 #include <set>
 #include <string>
 #include <vector>
 
-// namespace {
+namespace {
 
-// struct Entry {
-//     std::filesystem::path path;
-// };
+struct Entry {
+    std::filesystem::path path;
+    bool isSub = false;
+};
 
-// }
+} // namespace
 
 bool isGit(std::filesystem::path path) {
     return std::filesystem::exists(path) &&
@@ -44,7 +48,7 @@ void findSubmodules(std::filesystem::path path,
     parseSubmoduleFile(submoduleFile, cb);
 }
 
-using ContainerT = std::set<std::filesystem::path>;
+using ContainerT = std::map<std::filesystem::path, Entry>;
 
 int main(int argc, char *argv[]) {
     auto settings = FindSettings{argc, argv};
@@ -58,22 +62,48 @@ int main(int argc, char *argv[]) {
 
     auto paths = ContainerT{};
 
+    auto queue = std::vector<Entry>{};
     for (auto &folder : folders) {
         for (auto &it : std::filesystem::directory_iterator{folder}) {
-            paths.insert(it.path());
+            queue.push_back({
+                .path = it.path(),
+                .isSub = false,
+            });
         }
     }
 
-    for (auto it = paths.begin(); it != paths.end(); ++it) {
-        findSubmodules(*it, [&paths](std::filesystem::path path) {
-            paths.insert(path); //
-        });
+    while (!queue.empty()) {
+        auto it = queue.back();
+        queue.pop_back();
+        if (paths.find(it.path) != paths.end()) {
+            continue;
+        }
+        std::cout << "adding " << it.path << ": " << it.isSub << "\n";
+        paths[it.path] = it;
+        findSubmodules(it.path,
+                       [&it, &paths, &queue](std::filesystem::path path) {
+                           auto entry = Entry{
+                               .path = path,
+                               .isSub = true,
+                           };
+                           // std::cout << "..." << path
+                           queue.push_back(entry);
+                       });
     }
 
     for (auto &path : paths) {
-        if ((path.stem()).string().find(settings.name) != std::string::npos) {
-            std::cout << std::filesystem::relative(path, homeFolder).string()
-                      << "\n";
+        auto comp = path.first.stem().string();
+        for (auto &c : comp) {
+            auto loc = std::locale{""};
+            c = std::tolower(c, loc);
+        }
+        if (settings.name.empty() ||
+            comp.find(settings.name) != std::string::npos) {
+            std::cout
+                << (path.second.isSub ? "\033[34m" : "")
+                << std::filesystem::relative(path.first, homeFolder).string()
+                << "\033[0m"
+                << "\n";
         }
     }
 
