@@ -21,6 +21,9 @@ int main(int argc, char *argv[])
 cmake_minimum_required(VERSION 3.23)
 project({name})
 
+enable_testing()
+add_subdirectory(lib)
+
 add_executable(
     {name}
     src/main.cpp
@@ -38,6 +41,9 @@ target_link_libraries(
     PRIVATE
     ${CMAKE_THREAD_LIBS_INIT}
     )
+
+add_subdirectory(test)
+
 )_"},
     {"README.md", R"_(# {name}
 )_"},
@@ -61,10 +67,15 @@ AlwaysBreakAfterReturnType: None
 PenaltyReturnTypeOnItsOwnLine: 1000000
 BreakConstructorInitializers: BeforeComma
 
-)_"}};
+)_"},
+    {"lib/CMakelists.txt", R"_()_"},
+    {"test/CMakelists.txt", R"_()_"},
+};
 
 void initProject(std::string name) {
     std::filesystem::create_directories("src");
+    std::filesystem::create_directories("lib");
+    std::filesystem::create_directories("test");
 
     auto re = std::regex{"\\{name\\}"};
 
