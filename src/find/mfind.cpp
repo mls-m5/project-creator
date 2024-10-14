@@ -8,7 +8,6 @@
 #include <iostream>
 #include <locale>
 #include <map>
-#include <set>
 #include <string>
 #include <vector>
 
@@ -58,12 +57,17 @@ int main(int argc, char *argv[]) {
     auto folders = std::vector<std::filesystem::path>{
         progFolder / "Projekt",
         progFolder / "Experiment",
+        progFolder / "Other",
     };
 
     auto paths = ContainerT{};
 
     auto queue = std::vector<Entry>{};
     for (auto &folder : folders) {
+        if (!std::filesystem::exists(folder)) {
+            continue;
+        }
+
         for (auto &it : std::filesystem::directory_iterator{folder}) {
             queue.push_back({
                 .path = it.path(),
@@ -85,7 +89,6 @@ int main(int argc, char *argv[]) {
                                .path = path,
                                .isSub = true,
                            };
-                           // std::cout << "..." << path
                            queue.push_back(entry);
                        });
     }
