@@ -78,7 +78,6 @@ int main(int argc, char *argv[]) {
         if (paths.find(it.path) != paths.end()) {
             continue;
         }
-        std::cout << "adding " << it.path << ": " << it.isSub << "\n";
         paths[it.path] = it;
         findSubmodules(it.path,
                        [&it, &paths, &queue](std::filesystem::path path) {
@@ -92,6 +91,9 @@ int main(int argc, char *argv[]) {
     }
 
     for (auto &path : paths) {
+        if (settings.onlyPrintRoot && path.second.isSub) {
+            continue;
+        }
         auto comp = path.first.stem().string();
         for (auto &c : comp) {
             auto loc = std::locale{""};
@@ -105,6 +107,18 @@ int main(int argc, char *argv[]) {
                 << "\033[0m"
                 << "\n";
         }
+    }
+
+    if (settings.name.empty()) {
+        int countRoot = 0;
+        int countAll = 0;
+        for (auto &project : paths) {
+            countRoot += !project.second.isSub;
+            ++countAll;
+        }
+
+        std::cout << "Projects " << countRoot << "\n";
+        std::cout << "Including subrepositories " << countAll << "\n";
     }
 
     return 0;
