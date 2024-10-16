@@ -47,3 +47,9 @@ source project-goto
 
 This will define a function called goto that you could use to goto your
 selected project§§.
+
+
+## Using `mopen`
+
+`mopen` tries to guess the kind of project and open an appropriate application.
+
