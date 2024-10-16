@@ -1,0 +1,34 @@
+#!/usr/bin/bash
+
+# This script defines a function that makes it convenient to goto a single
+# project using the mfind project
+
+function goto {
+    results=$(mfind "$@")
+
+    mfind_exit_code=$?
+
+    # Check if mfind returned a non-zero exit code
+    if [[ $mfind_exit_code -ne 0 ]]; then
+        echo "Error: mfind command failed with exit code $mfind_exit_code"
+        return 1
+    fi
+
+
+    line_count=$(echo "$results" | wc -l)
+
+    if [[ $line_count -eq 0 ]]; then
+        echo "No project with matching name found"
+
+    elif [[ $line_count -gt 1 ]]; then
+        mfind -i "$@"
+        echo "Multiple projects found, run with -n to select one, or specify more"
+
+    else
+        results=$(mfind "$@" -f)
+        # Extract the result and cd into that directory
+        target=$(echo "$results" | head -n 1)
+#        echo "Changing directory to: $target"
+        cd "$target"
+    fi
+}

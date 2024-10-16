@@ -7,20 +7,25 @@ add_executable(
     src/create/create-project.cpp
     )
 
-target_compile_features(create-project PRIVATE cxx_std_17)
+target_compile_features(create-project PRIVATE cxx_std_20)
 
 add_executable(
     build
     src/build/build-project.cpp
     )
 
-target_compile_features(build PRIVATE cxx_std_17)
+target_compile_features(build PRIVATE cxx_std_20)
 
 add_executable(
     mfind
     src/find/mfind.cpp
     )
 
-target_compile_features(mfind PRIVATE cxx_std_17)
+target_compile_features(mfind PRIVATE cxx_std_20)
 
-file(COPY install.sh DESTINATION .)
+file(GLOB_RECURSE FILES_TO_COPY "script/*")
+
+foreach(file ${FILES_TO_COPY})
+    message("Copying ${file}")
+    file(COPY ${file} DESTINATION .)
+endforeach()

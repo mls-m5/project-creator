@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <iostream>
 #include <string>
+#include <string_view>
 #include <vector>
 
 auto helpStr = R"_(
@@ -29,9 +30,18 @@ struct FindSettings {
     bool shouldCount = false;
     size_t selectNum = 0;
 
-    [[noreturn]] void printHelp(int ret = 0) {
+    [[noreturn]] static void printHelp(int ret = 0) {
         std::cout << helpStr << std::endl;
         std::exit(ret);
+    }
+
+    static bool isDigits(std::string_view str) {
+        for (auto c : str) {
+            if (c < '0' || c > '9') {
+                return false;
+            }
+        }
+        return true;
     }
 
     FindSettings(int argc, char **argv) {
@@ -57,6 +67,12 @@ struct FindSettings {
             }
             else if (arg == "--select" || arg == "-n") {
                 selectNum = std::stoul(args.at(++i));
+            }
+            else if (arg.starts_with("-n")) {
+                selectNum = std::stoul(arg.substr(2));
+            }
+            else if (isDigits(arg)) {
+                selectNum = std::stoul(arg);
             }
             else if (arg == "--index" || arg == "-i") {
                 shouldShowIndex = true;
