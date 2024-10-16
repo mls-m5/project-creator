@@ -236,6 +236,18 @@ void createQtCreatorFiles(bool shouldRefresh) {
 int main(int argc, char **argv) {
     const auto settings = CreateSettings{argc, argv};
 
+    if (settings.path.empty() && !settings.shouldInitGit) {
+        auto path = std::filesystem::absolute(std::filesystem::current_path());
+        for (; !path.empty(); path = path.parent_path()) {
+            if (std::filesystem::exists(path / ".git")) {
+                std::cout << "No git in current directory but found git in\n"
+                          << path.string() << std::endl;
+                std::filesystem::current_path(path);
+                break;
+            }
+        }
+    }
+
     if (!settings.path.empty()) {
         std::filesystem::create_directories(settings.path);
         std::filesystem::current_path(settings.path);
