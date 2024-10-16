@@ -9,6 +9,7 @@
 #include <locale>
 #include <map>
 #include <string>
+#include <unistd.h>
 #include <vector>
 
 namespace {
@@ -17,6 +18,10 @@ struct Entry {
     std::filesystem::path path;
     bool isSub = false;
 };
+
+bool isTerminal() {
+    return isatty(fileno(stdout));
+}
 
 } // namespace
 
@@ -93,8 +98,14 @@ int main(int argc, char *argv[]) {
                        });
     }
 
+    bool isTerminal = ::isTerminal();
+    size_t index = 1;
+
     for (auto &path : paths) {
         if (settings.onlyPrintRoot && path.second.isSub) {
+            continue;
+        }
+        if (settings.onlyPrintSub && !path.second.isSub) {
             continue;
         }
         auto comp = path.first.stem().string();
@@ -104,15 +115,36 @@ int main(int argc, char *argv[]) {
         }
         if (settings.name.empty() ||
             comp.find(settings.name) != std::string::npos) {
-            std::cout
-                << (path.second.isSub ? "\033[34m" : "")
-                << std::filesystem::relative(path.first, homeFolder).string()
-                << "\033[0m"
-                << "\n";
+
+            if (settings.selectNum) {
+                if (index < settings.selectNum) {
+                    ++index;
+                    continue;
+                }
+
+                if (index > settings.selectNum) {
+                    break;
+                }
+            }
+
+            if (settings.shouldShowIndex) {
+                std::cout << index << ": ";
+            }
+
+            std::cout << (path.second.isSub && isTerminal ? "\033[34m" : "");
+            if (settings.shouldPrintFullName) {
+                std::cout << path.first.string();
+            }
+            else {
+                std::cout << std::filesystem::relative(path.first, homeFolder)
+                                 .string();
+            }
+            std::cout << (isTerminal ? "\033[0m" : "") << "\n";
+            ++index;
         }
     }
 
-    if (settings.name.empty()) {
+    if (settings.shouldCount) {
         int countRoot = 0;
         int countAll = 0;
         for (auto &project : paths) {
