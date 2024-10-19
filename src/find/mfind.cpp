@@ -54,21 +54,11 @@ void findSubmodules(std::filesystem::path path,
 
 using ContainerT = std::map<std::filesystem::path, Entry>;
 
-int main(int argc, char *argv[]) {
-    auto settings = FindSettings{argc, argv};
-    std::filesystem::path homeFolder = std::getenv("HOME");
-
-    auto progFolder = std::filesystem::path{homeFolder} / "Prog";
-    auto folders = std::vector<std::filesystem::path>{
-        progFolder / "Projekt",
-        progFolder / "Experiment",
-        progFolder / "Other",
-    };
-
+ContainerT findAllPaths(FindSettings &settings) {
     auto paths = ContainerT{};
 
     auto queue = std::vector<Entry>{};
-    for (auto &folder : folders) {
+    for (auto &folder : settings.folders) {
         if (!std::filesystem::exists(folder)) {
             continue;
         }
@@ -136,13 +126,41 @@ int main(int argc, char *argv[]) {
                 std::cout << path.first.string();
             }
             else {
-                std::cout << std::filesystem::relative(path.first, homeFolder)
+                std::cout << std::filesystem::relative(path.first,
+                                                       settings.homeFolder)
                                  .string();
             }
             std::cout << (isTerminal ? "\033[0m" : "") << "\n";
             ++index;
         }
     }
+
+    return paths;
+}
+
+ContainerT getFavorites(const FindSettings &settings) {
+    auto ret = ContainerT{};
+    if (!std::filesystem::exists(settings.favoritesPath)) {
+        std::cerr << "No favorites found. Add with --add-favorite\n";
+        exit(1);
+        return ret;
+    }
+
+    auto file = std::ifstream{settings.favoritesPath};
+    for (std::string line; std::getline(file, line);) {
+        ret[line] = Entry{
+            .path = line,
+        };
+    }
+
+    return ret;
+}
+
+int main(int argc, char *argv[]) {
+    auto settings = FindSettings{argc, argv};
+
+    auto paths = settings.shouldOnlyListFavorites ? getFavorites(settings)
+                                                  : findAllPaths(settings);
 
     if (settings.shouldCount) {
         int countRoot = 0;

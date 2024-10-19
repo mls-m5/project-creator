@@ -5,6 +5,7 @@
 namespace {
 
 void openWithNohup(std::string command) {
+    // system(command.c_str());
     std::system(("nohup " + command + " > /dev/null 2>&1&").c_str());
 }
 
@@ -12,8 +13,8 @@ void openQtCreator(std::filesystem::path projectFile) {
     auto bin = std::filesystem::path{"/opt/Qt/Tools/QtCreator/bin/qtcreator"};
     auto command = bin.string() + " '" + projectFile.string() + "'";
 
-    // openWithNohup(command);
-    std::cout << projectFile << std::endl;
+    openWithNohup(command);
+    std::cout << "opening with qtcreator: " << projectFile << std::endl;
 }
 
 void openVsCode(std::filesystem::path path) {

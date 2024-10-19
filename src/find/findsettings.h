@@ -18,6 +18,10 @@ mfind [flagse] name
 --index -i            show result number
 --count -c            show how many repositories there is
 
+--favorites -o        only list or search favorites
+--add-favorite -a     save a project to quickly access
+--remove-favorite -x  remove saved project from list
+
 --help -h             print this string
 )_";
 
@@ -28,7 +32,22 @@ struct FindSettings {
     bool shouldPrintFullName = false;
     bool shouldShowIndex = false;
     bool shouldCount = false;
+    bool shouldRemoveFavorite = false;
+    bool shouldAddFavorite = false;
+    bool shouldOnlyListFavorites;
     size_t selectNum = 0;
+
+    std::filesystem::path homeFolder = std::getenv("HOME");
+
+    std::filesystem::path progFolder =
+        std::filesystem::path{homeFolder} / "Prog";
+    std::vector<std::filesystem::path> folders =
+        std::vector<std::filesystem::path>{
+            progFolder / "Projekt",
+            progFolder / "Experiment",
+            progFolder / "Other",
+        };
+    std::filesystem::path favoritesPath = homeFolder / ".mfind_favorites";
 
     [[noreturn]] static void printHelp(int ret = 0) {
         std::cout << helpStr << std::endl;
@@ -46,9 +65,6 @@ struct FindSettings {
 
     FindSettings(int argc, char **argv) {
         auto args = std::vector<std::string>(argv + 1, argv + argc);
-        // if (args.empty()) {
-        //     printHelp();
-        // }
 
         for (size_t i = 0; i < args.size(); ++i) {
             auto arg = args.at(i);
@@ -79,6 +95,16 @@ struct FindSettings {
             }
             else if (arg == "--count" || arg == "-c") {
                 shouldCount = true;
+            }
+            else if (arg == "--add-favorite" || arg == "-a") {
+                shouldAddFavorite = true;
+            }
+            else if (arg == "--remove-favorite" || arg == "-x") {
+                shouldRemoveFavorite = true;
+            }
+            else if (arg == "--favorites" || arg == "--favorite" ||
+                     arg == "-o") {
+                shouldOnlyListFavorites = true;
             }
             else {
                 if (arg.front() == '-') {
