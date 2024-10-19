@@ -8,7 +8,7 @@
 auto helpStr = R"_(
 usage:
 
-create-project [flagse] [path]
+create-project [flags] [path]
 
 --all -a            enable all flags to create a full project
                     ie  --creator --git

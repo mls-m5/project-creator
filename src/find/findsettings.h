@@ -9,7 +9,7 @@
 auto helpStr = R"_(
 usage:
 
-mfind [flagse] name
+mfind [flags] name
 
 --only-root -r        do not search submodules
 --only-sub -s         do not search root directories
