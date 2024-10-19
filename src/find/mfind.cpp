@@ -88,8 +88,14 @@ ContainerT findAllPaths(FindSettings &settings) {
                        });
     }
 
+    return paths;
+}
+
+std::vector<std::filesystem::path> printPaths(const FindSettings &settings,
+                                              const ContainerT &paths) {
     bool isTerminal = ::isTerminal();
     size_t index = 1;
+    auto ret = std::vector<std::filesystem::path>{};
 
     for (auto &path : paths) {
         if (settings.onlyPrintRoot && path.second.isSub) {
@@ -130,24 +136,26 @@ ContainerT findAllPaths(FindSettings &settings) {
                                                        settings.homeFolder)
                                  .string();
             }
+            ret.push_back(path.second.path);
             std::cout << (isTerminal ? "\033[0m" : "") << "\n";
             ++index;
         }
     }
 
-    return paths;
+    return ret;
 }
 
 ContainerT getFavorites(const FindSettings &settings) {
     auto ret = ContainerT{};
     if (!std::filesystem::exists(settings.favoritesPath)) {
-        std::cerr << "No favorites found. Add with --add-favorite\n";
-        exit(1);
         return ret;
     }
 
     auto file = std::ifstream{settings.favoritesPath};
     for (std::string line; std::getline(file, line);) {
+        if (line.empty()) {
+            continue;
+        }
         ret[line] = Entry{
             .path = line,
         };
@@ -156,11 +164,58 @@ ContainerT getFavorites(const FindSettings &settings) {
     return ret;
 }
 
+void saveFavorites(const FindSettings &settings, const ContainerT &paths) {
+    auto file = std::ofstream{settings.favoritesPath};
+
+    for (auto &it : paths) {
+        file << it.second.path.string() << "\n";
+    }
+}
+
 int main(int argc, char *argv[]) {
     auto settings = FindSettings{argc, argv};
 
     auto paths = settings.shouldOnlyListFavorites ? getFavorites(settings)
                                                   : findAllPaths(settings);
+
+    if (settings.shouldOnlyListFavorites && paths.empty()) {
+        std::cerr << "No favorites found. Add with --add-favorite\n";
+        return 1;
+    }
+
+    auto selectedPaths = printPaths(settings, paths);
+
+    if (settings.shouldAddFavorite) {
+        if (selectedPaths.empty()) {
+            std::cerr << "No path selected: No match\n";
+            return 1;
+        }
+        else if (selectedPaths.size() > 1) {
+            std::cerr << "No path selected: To many matches, select a single\n";
+        }
+        auto favorites = getFavorites(settings);
+        favorites[selectedPaths.front()] = {
+            .path = selectedPaths.front(),
+        };
+
+        saveFavorites(settings, favorites);
+        std::cout << "Added " << selectedPaths.front() << " to favorites\n";
+    }
+    else if (settings.shouldRemoveFavorite) {
+        if (selectedPaths.empty()) {
+            std::cerr << "No path selected: No match\n";
+            return 1;
+        }
+        else if (selectedPaths.size() > 1) {
+            std::cerr << "No path selected: To many matches, select a single\n";
+        }
+        auto favorites = getFavorites(settings);
+
+        favorites.erase(selectedPaths.front());
+
+        saveFavorites(settings, favorites);
+        std::cout << "Removed " << selectedPaths.front() << " to favorites\n";
+    }
 
     if (settings.shouldCount) {
         int countRoot = 0;
