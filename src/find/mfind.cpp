@@ -208,6 +208,7 @@ int main(int argc, char *argv[]) {
         }
         else if (selectedPaths.size() > 1) {
             std::cerr << "No path selected: To many matches, select a single\n";
+            return 1;
         }
         auto favorites = getFavorites(settings);
 
