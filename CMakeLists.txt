@@ -26,6 +26,12 @@ add_executable(
     )
 target_compile_features(mopen PRIVATE cxx_std_20)
 
+add_executable(
+    mgit
+    src/git/mgit.cpp
+    )
+target_compile_features(mopen PRIVATE cxx_std_20)
+
 file(GLOB_RECURSE FILES_TO_COPY "script/*")
 
 foreach(file ${FILES_TO_COPY})
