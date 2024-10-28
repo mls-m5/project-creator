@@ -41,6 +41,22 @@ bool tryOpenKiCad(int &skipNum, std::filesystem::path path) {
     return false;
 }
 
+bool tryOpenGoLang(int &skipNum, std::filesystem::path dir) {
+    for (auto &path : std::filesystem::directory_iterator{dir}) {
+        if (path.path().extension() == ".go") {
+            if (skipNum > 0) {
+                --skipNum;
+                std::cout << "skipping " << path.path() << "\n";
+                continue;
+            }
+            openVsCode(dir);
+            return true;
+        }
+    }
+
+    return false;
+}
+
 bool tryOpen(int &skipNum,
              const OpenSettings &settings,
              std::filesystem::path path) {
@@ -81,6 +97,10 @@ bool tryOpen(int &skipNum,
                 return true;
             }
         }
+    }
+
+    if (tryOpenGoLang(skipNum, path)) {
+        return true;
     }
 
     return false;
