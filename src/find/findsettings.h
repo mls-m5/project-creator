@@ -46,6 +46,7 @@ struct FindSettings {
             progFolder / "Projekt",
             progFolder / "Experiment",
             progFolder / "Other",
+            homeFolder / "AndroidStudioProjects",
         };
     std::filesystem::path favoritesPath = homeFolder / ".mfind_favorites";
 
