@@ -68,8 +68,8 @@ PenaltyReturnTypeOnItsOwnLine: 1000000
 BreakConstructorInitializers: BeforeComma
 
 )_"},
-    {"lib/CMakelists.txt", R"_()_"},
-    {"test/CMakelists.txt", R"_()_"},
+    {"lib/CMakeLists.txt", R"_()_"},
+    {"test/CMakeLists.txt", R"_()_"},
 };
 
 void initProject(std::string name) {
