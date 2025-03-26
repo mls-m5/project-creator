@@ -22,4 +22,9 @@ void build() {
         .src("src/open/*.cpp")
         .flags("-std=c++23")
         .include("include");
+
+    executable("project-overview") //
+        .src("src/overview/*.cpp")
+        .flags("-std=c++23")
+        .include("include");
 }

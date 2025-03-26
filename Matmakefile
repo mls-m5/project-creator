@@ -1,17 +1,17 @@
-
+#!/usr/bin/env matmake2
 # using matmake2: https://github.com/laserskold/matmake2
 
 create
   out = create-project
-  src = src/create-project.cpp
+  src = src/create/create-project.cpp
   command = [exe]
   copy =
      testdata
-     install.sh
+     script/install.sh
 
 build
   out = build
-  src = src/build-project.cpp
+  src = src/build/build-project.cpp
   command = [exe]
 
 all
