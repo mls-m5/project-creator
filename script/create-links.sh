@@ -12,12 +12,12 @@ function create_symlink {
 
     dest="$DEST_DIR/$(basename "$1")"
 
-    if [ -e "$dest" ]; then
-        sudo rm "$dest"
-        echo "Removed existing file: $dest"
-    fi
+#    if [ -e "$dest" ]; then
+#        sudo rm "$dest"
+#        echo "Removed existing file: $dest"
+#    fi
 
-    sudo ln -s "$src" "$dest"
+    sudo ln -sf "$src" "$dest"
     echo "Created symlink: $dest -> $src"
 }
 

@@ -2,29 +2,33 @@
 #include "matmake4/matmake.h"
 
 void build() {
-    add_subdirectory("lib");
+    // subdirectory("lib");
+
+    auto &l = lib("common") //
+                  .flags("-std=c++23")
+                  .copy("README.md")
+                  .copy("script/*", ".")
+                  .include("include");
 
     executable("create-project") //
         .src("src/create/*.cpp")
         .include("include")
-        .copy("README.md");
+        .in(l);
 
     executable("build") //
         .src("src/build/*.cpp")
-        .include("include");
+        .in(l);
 
     executable("mfind") //
         .src("src/find/*.cpp")
-        .flags("-std=c++23")
+        .in(l)
         .include("include");
 
     executable("mopen") //
         .src("src/open/*.cpp")
-        .flags("-std=c++23")
-        .include("include");
+        .in(l);
 
     executable("project-overview") //
         .src("src/overview/*.cpp")
-        .flags("-std=c++23")
-        .include("include");
+        .in(l);
 }
