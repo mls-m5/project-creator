@@ -10,3 +10,6 @@
 *.cxxflags
 *.files
 *.includes
+.cache
+
+compile_commands.json

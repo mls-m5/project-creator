@@ -72,7 +72,7 @@ BreakConstructorInitializers: BeforeComma
     {"test/CMakeLists.txt", R"_()_"},
 };
 
-void initProject(std::string name) {
+inline void initProject(std::string name) {
     std::filesystem::create_directories("src");
     std::filesystem::create_directories("lib");
     std::filesystem::create_directories("test");
