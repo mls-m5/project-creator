@@ -27,6 +27,8 @@ void buildCmake(const BuildSettings &settings) {
     std::filesystem::create_directories(settings.path);
     std::filesystem::current_path(settings.path);
 
+    std::cout << "building in " << std::filesystem::current_path() << std::endl;
+
     auto buildPath = std::filesystem::absolute(std::filesystem::current_path());
     auto relative = std::filesystem::relative(root, buildPath);
 
