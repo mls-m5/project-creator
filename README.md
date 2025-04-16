@@ -53,3 +53,9 @@ selected project§§.
 
 `mopen` tries to guess the kind of project and open an appropriate application.
 
+
+## Merge compilation databases into a single file
+
+Run `./mergecommands` in the folder where you would like your `compile_commands.json` and it will search all child directories for compilation databases to merge together.
+
+

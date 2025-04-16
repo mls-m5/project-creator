@@ -62,7 +62,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    auto out = std::ofstream{"out-test.json"};
+    auto out = std::ofstream{"compile_commands.json"};
 
     auto outJson = json::JsonOut{out};
 
