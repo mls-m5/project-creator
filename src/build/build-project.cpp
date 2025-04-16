@@ -6,9 +6,14 @@
 enum ProjectType {
     CMake,
     Matmake,
+    Matmake4,
 };
 
 ProjectType projectType() {
+    if (std::filesystem::exists("build.cpp")) {
+        return Matmake4;
+    }
+
     if (std::filesystem::exists("CMakeLists.txt")) {
         return CMake;
     }
@@ -58,6 +63,16 @@ void buildCmake(const BuildSettings &settings) {
     }
 }
 
+int buildMatmake4(const BuildSettings &settings) {
+    auto command = std::string{"matmake4"};
+
+    if (settings.shouldTest) {
+        command += " --test";
+    }
+
+    return std::system(command.c_str());
+}
+
 int main(int argc, char *argv[]) {
     const auto settings = BuildSettings{argc, argv};
     auto type = projectType();
@@ -75,6 +90,8 @@ int main(int argc, char *argv[]) {
             return std::system(("matmake2 -t gcc-debug" + test).c_str());
         }
     } break;
+    case Matmake4:
+        return buildMatmake4(settings);
     }
 
     return 0;

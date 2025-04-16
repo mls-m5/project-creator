@@ -8,7 +8,8 @@ void build() {
                   .flags("-std=c++23")
                   .copy("README.md")
                   .copy("script/*", ".")
-                  .include("include");
+                  .include("include")
+                  .type(TargetType::Interface);
 
     executable("create-project") //
         .src("src/create/*.cpp")
@@ -30,5 +31,10 @@ void build() {
 
     executable("project-overview") //
         .src("src/overview/*.cpp")
+        .in(l);
+
+    executable("mergecommand") //
+        .src("src/compilecommands/*.cpp")
+        .include("./lib/fast-json/include/")
         .in(l);
 }
