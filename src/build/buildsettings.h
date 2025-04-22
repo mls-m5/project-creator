@@ -4,13 +4,14 @@
 #include <string>
 #include <vector>
 
-auto helpStr = R"_(
+static constexpr auto helpStr = R"_(
 usage
 build [flags]
 
 --release      build release
 --test         run tests after build
 --help -h      print this text
+--dir -C       run in specified directory
 
 )_";
 
@@ -42,6 +43,9 @@ struct BuildSettings {
             else if (arg == "--help" || arg == "-h") {
                 printHelp(0);
             }
+            else if (arg == "--dir" || arg == "-C") {
+                std::filesystem::current_path(args.at(++i));
+            }
             else {
                 if (arg.front() == '-') {
                     std::cerr << "invalid argument " << arg << "\n";
@@ -53,7 +57,7 @@ struct BuildSettings {
         }
 
         if (path.empty()) {
-            path = "build/default";
+            path = "build/debug";
         }
     }
 };

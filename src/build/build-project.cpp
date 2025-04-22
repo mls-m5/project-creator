@@ -42,6 +42,10 @@ void buildCmake(const BuildSettings &settings) {
             std::string{"cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \""} +
             relative.string() + "\"";
 
+        if (!settings.isRelease) {
+            command += " -DCMAKE_BUILD_TYPE=Debug";
+        }
+
         std::cout << "running " << command << std::endl;
 
         if (auto r = std::system(command.c_str())) {
@@ -71,7 +75,21 @@ int buildMatmake4(const BuildSettings &settings) {
         command += " --test";
     }
 
+    if (!settings.isRelease) {
+        command += " -t debug";
+    }
+
     return std::system(command.c_str());
+}
+
+int buildMatmake2(const BuildSettings &settings) {
+    auto test = std::string{settings.shouldTest ? " --test" : ""};
+    if (settings.isRelease) {
+        return std::system(("matmake2 -t gcc" + test).c_str());
+    }
+    else {
+        return std::system(("matmake2 -t gcc-debug" + test).c_str());
+    }
 }
 
 int main(int argc, char *argv[]) {
@@ -82,15 +100,9 @@ int main(int argc, char *argv[]) {
     case CMake:
         buildCmake(settings);
         break;
-    case Matmake: {
-        auto test = std::string{settings.shouldTest ? " --test" : ""};
-        if (settings.isRelease) {
-            return std::system(("matmake2 -t gcc" + test).c_str());
-        }
-        else {
-            return std::system(("matmake2 -t gcc-debug" + test).c_str());
-        }
-    } break;
+    case Matmake:
+        return buildMatmake2(settings);
+        break;
     case Matmake4:
         return buildMatmake4(settings);
     }
