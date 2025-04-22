@@ -57,7 +57,8 @@ void buildCmake(const BuildSettings &settings) {
     }
 
     if (settings.shouldTest) {
-        if (auto r = std::system("ctest .")) {
+        if (auto r =
+                std::system("ctest . --rerun-failed --output-on-failure")) {
             exit(r);
         }
     }
