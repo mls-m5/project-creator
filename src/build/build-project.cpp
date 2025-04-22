@@ -3,12 +3,6 @@
 #include <iostream>
 #include <thread>
 
-enum ProjectType {
-    CMake,
-    Matmake,
-    Matmake4,
-};
-
 ProjectType projectType() {
     if (std::filesystem::exists("build.cpp")) {
         return Matmake4;
@@ -19,14 +13,14 @@ ProjectType projectType() {
     }
 
     if (std::filesystem::exists("Matmakefile")) {
-        return Matmake;
+        return Matmake2;
     }
 
     std::cerr << "Could not find any build system in folder\n";
     std::terminate();
 }
 
-void buildCmake(const BuildSettings &settings) {
+int buildCmake(const BuildSettings &settings) {
     auto root = std::filesystem::absolute(std::filesystem::current_path());
 
     std::filesystem::create_directories(settings.path);
@@ -57,15 +51,16 @@ void buildCmake(const BuildSettings &settings) {
             std::system(("cmake --build . -j " +
                          std::to_string(std::thread::hardware_concurrency()))
                             .c_str())) {
-        exit(r);
+        return r;
     }
 
     if (settings.shouldTest) {
         if (auto r =
                 std::system("ctest . --rerun-failed --output-on-failure")) {
-            exit(r);
+            return r;
         }
     }
+    return 0;
 }
 
 int buildMatmake4(const BuildSettings &settings) {
@@ -94,17 +89,21 @@ int buildMatmake2(const BuildSettings &settings) {
 
 int main(int argc, char *argv[]) {
     const auto settings = BuildSettings{argc, argv};
-    auto type = projectType();
+    auto type = settings.type;
+    if (type == Default) {
+        type = projectType();
+    }
 
     switch (type) {
     case CMake:
-        buildCmake(settings);
-        break;
-    case Matmake:
+        return buildCmake(settings);
+    case Matmake2:
         return buildMatmake2(settings);
-        break;
     case Matmake4:
         return buildMatmake4(settings);
+    case Default:
+        std::cerr << "Could not find any build system\n";
+        std::exit(1);
     }
 
     return 0;

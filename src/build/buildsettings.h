@@ -12,13 +12,36 @@ build [flags]
 --test         run tests after build
 --help -h      print this text
 --dir -C       run in specified directory
+--type -t      Type. Could be cmake, matmake2 or matmake4
 
 )_";
+
+enum ProjectType {
+    Default,
+    CMake,
+    Matmake2,
+    Matmake4,
+};
+
+inline ProjectType typeFromString(std::string_view name) {
+    if (name == "cmake") {
+        return CMake;
+    }
+    if (name == "matmake2") {
+        return Matmake2;
+    }
+    if (name == "matmake4") {
+        return Matmake4;
+    }
+    std::cerr << "no such build system " << name << "\n";
+    std::exit(1);
+}
 
 struct BuildSettings {
     bool isRelease = false;
     bool shouldTest = false;
     std::filesystem::path path;
+    ProjectType type = ProjectType::Default;
 
     [[noreturn]] void printHelp(int ret = 0) {
         std::cout << helpStr << std::endl;
@@ -45,6 +68,9 @@ struct BuildSettings {
             }
             else if (arg == "--dir" || arg == "-C") {
                 std::filesystem::current_path(args.at(++i));
+            }
+            else if (arg == "--type" || arg == "-t") {
+                type = typeFromString(args.at(++i));
             }
             else {
                 if (arg.front() == '-') {
